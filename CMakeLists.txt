@@ -1,0 +1,35 @@
+cmake_minimum_required(VERSION 3.24)
+set(PROJECT_LANGUAGES "CXX" "Fortran")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_FORTRAN_STANDARD 90)
+#set(CMAKE_FORTRAN_STANDARD_REQUIRED ON)
+# fixed form, C preprocessed, all REAL as double
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffixed-form -cpp -fdefault-real-8")
+set(PROJECT_FAMILY_NAME "CSRiemann")
+set(PROJECT_VERSION "0.5.0")
+set(PROJECT_VERSION_NAME "NashvilleDolly")
+set(PROJECT_VERSION_MONTH "September")
+set(PROJECT_VERSION_YEAR "2026")
+set(PROJECT_WORKING_RDIRS "_T" "_I")
+set(ACCEL "") # "Cuda", "Metal", "" (none)
+set(ACCEL_DEPENDENCIES "") # cuBLAS, cuRAND, ...
+set(ACCEL_INSTALL_DIR "/usr/local") # /usr/local, $ENV{CUDA_HOME}, $ENV{METAL_HOME}, ...
+set(DEPENDENCY_LIB_TYPE "s") # shared (s) or static (a)
+set(DGCALC_DEPENDENCY_TEST "")
+set(DGCALC_DEPENDENCY_SRC ${DGCALC_DEPENDENCY_TEST} "Base" "Types" "Kyte" "Kabbage" "Scalar" "Tennsix")
+set(DGCALC_DEPENDENCY_LIB "")
+set(GROUPS "SPGEOMESH")
+set(SPGEOMESH_DEPENDENCY_TEST "")
+set(SPGEOMESH_DEPENDENCY_SRC ${GEOMESH_DEPENDENCY_TEST} "Kiwi" "Fields")
+set(SPGEOMESH_DEPENDENCY_LIB "CubeSphere")
+
+set(NUM_PROCESSES 6)
+
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+
+include($ENV{DGCALC_HOME}/src/dgcalc.1.cmake)
+set(PROJECT_NAME "${PROJECT_FAMILY_NAME}${PROJECT_VERSION}${PROJECT_VERSION_NAME}_${PROJECT_VERSION_MONTH}${PROJECT_VERSION_YEAR}")
+project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES ${PROJECT_LANGUAGES})
+include($ENV{DGCALC_HOME}/src/dgcalc.2.cmake)
+
+
