@@ -5,7 +5,9 @@
 
 int main(int argc, char** argv) {
 
-    // Unit Tests:
+   MPI_Init(&argc, &argv);
+
+   // Unit Tests:
 
 //   TMesh::Tdryrun();
 
@@ -19,19 +21,27 @@ int main(int argc, char** argv) {
 //   TConnectivity::Tvisualize_Fortran();
 
 
-//   TProcess::Tdryrun(argc, argv);
+//   TProcess::Tdryrun();
 
    // warm-up cases for halo exchange testing:
-//   TProcess::Tconnectivityview(argc, argv);
-//   TProcess::Tglobal_view(argc, argv);
-//   TProcess::Texchange_1patch(argc, argv);
-   TProcess::Texchange_9patch(argc, argv);
-//   TProcess::Texchange_2ghost(argc, argv);
-
+//   TProcess::Tconnectivityview();
+//   TProcess::Tglobal_view();
+//   TProcess::Texchange_1patch();
+//   TProcess::Texchange_9patch();
+//   TProcess::Texchange_2ghost();
+//   TProcess::Texchange_plot_clinic();
+   TProcess::Texchange_plot();
 
    // Integration Tests:
 
-//   IAugust30::start(argc, argv);
+//   IAugust30::start();
+
+   int finalized = 0;
+   // Check if MPI was already shut down elsewhere.
+   MPI_Finalized(&finalized);
+   if (!finalized) {
+      MPI_Finalize();
+   }
 
 }
 

@@ -6,7 +6,7 @@ using std::cout; using std::endl; using std::cerr;
 #include <iomanip>
 #include <fstream>
 
-//#include <catch2/catch.hpp>
+#include <kiwi/mpi/sim.h>
 
 void savetxt(const std::string& filename, const std::string& content) {
    std::ofstream s;

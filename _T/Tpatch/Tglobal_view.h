@@ -24,7 +24,7 @@ public:
    // processes execute, all patches will be stored.
    static void make(Patch* patches, int32 n_patch, const std::string& prefix = "", int32 iproc = 0, bool distinguish_proc = false, int32 icc = 0, int32 iz = 0, int32 ir = P::NGhost, int32 ilevel = 0) {
       for (int32 ii = 0; ii < n_patch; ++ii) {
-         auto patch = patches[ii];
+         auto& patch = patches[ii];
          auto isector = patch.index.isector;
          auto ix = patch.index.ix;
          auto iy = patch.index.iy;

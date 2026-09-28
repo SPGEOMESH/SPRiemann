@@ -10,8 +10,9 @@
 
 #include <kiwi/mpi/sim.h>
 
-
+#include <iostream>
 #include <unistd.h>
+
 
 /*
  * Patches that exist in the current global
@@ -27,8 +28,9 @@ template <
       typename Parameters
 >
 class Process {
-
+private: // types:
    using P = Parameters;
+public: // types:
    using Mesh = Mesh<P>;
    using Connectivity = Connectivity<P>;
    using Patch = Patch<P>;
@@ -77,17 +79,22 @@ public: // fields:
    MPI_Comm sector_comm;
 
    // The global mesh, used to populate patch geometry.
-   Mesh* global_mesh;
+   std::unique_ptr<Mesh> global_mesh;
    // Patches assigned to this processor.
-   Patch* patches;
-   // sector-internal buffer for halo exchange
-   ZCBuffer* zc_recv_buf;
+   std::unique_ptr<Patch[]> patches;
+   // sector-internal buffer for halo exchange: recv (receive)
+   std::unique_ptr<ZCBuffer[]> zc_recv_buf;
+   // buffers for halo exchange: send and put (inter-sector and intra-sector, respectively)
+   std::unique_ptr<zc_U[]> zc_send_buf;
+   std::unique_ptr<zc_U[]> zc_put_buf;
+   // Patch connectivity, i.e., lists with indexing
+   // and connectivity data. Size scales with global number of patches.
+   std::unique_ptr<Connectivity> c_ptr;
+   Connectivity& connectivity;
+
 
    std::array<int32, ilevel_max+1> patch_upper;
 
-   // Patch connectivity, i.e., lists with indexing
-   // and connectivity data.
-   Connectivity connectivity;
 
    // sectors assigned to this process
    int32 sector_color;
@@ -111,8 +118,6 @@ public: // ctor:
     * for all processing in the simulation.
     */
    Process(
-         int argc,
-         char** argv,
          UserDefinedPatchList& existinglist = no_static_amr
    ):
       ierr(0),
@@ -123,11 +128,15 @@ public: // ctor:
       n_patch(0),
       sector_win(MPI_Win()),
       sector_comm(MPI_Comm()),
-      global_mesh(nullptr),
-      patches(nullptr),
-      zc_recv_buf(nullptr)
+      c_ptr(std::make_unique<Connectivity>()),
+      connectivity(*c_ptr)
    {
-      MPI_Init(&argc, &argv);
+      int is_initialized = 0;
+      MPI_Initialized(&is_initialized);
+      if (!is_initialized) {
+         std::cout << "Creating a Process before initializing MPI is not permitted." << endl;
+         exit(-1);
+      }
       // nimages == comm_world_size TODO
       ierr = MPI_Comm_dup(MPI_COMM_WORLD, &world_comm);
       ierr = MPI_Comm_size(world_comm, &world_size);
@@ -189,17 +198,19 @@ public: // ctor:
       // for level-by-level looping.
       patch_upper = pid.patch_upper;
       // create the patch memory.
-      patches = new Patch[n_patch];
+      patches = std::make_unique<Patch[]>(n_patch);
       for (int ii = 0; ii < n_patch; ++ii) {
          // pass the indexes to the patches
          // so they can be initialized.
          patches[ii].index = pid.indexes[ii];
       }
 
-      // create the buffer memory.
-      zc_recv_buf = new ZCBuffer[n_patch];
+      // create the buffer memory for halo exchanges.
+      zc_recv_buf = std::make_unique<ZCBuffer[]>(n_patch);
+      zc_send_buf = std::make_unique<zc_U[]>(n_patch);
+      zc_put_buf = std::make_unique<zc_U[]>(n_patch);
       MPI_Aint size_sector_buffers = sizeof(ZCBuffer)*n_patch;
-      MPI_Win_create(zc_recv_buf, size_sector_buffers, 1, MPI_INFO_NULL, sector_comm, &sector_win);
+      MPI_Win_create(zc_recv_buf.get(), size_sector_buffers, 1, MPI_INFO_NULL, sector_comm, &sector_win);
       // The intra-sector communication window is defined (buffers for communication internal to sector).
 
       // We end up never needing this, but print it as a quiet update.
@@ -215,24 +226,6 @@ public:
 
    ~Process() {
       MPI_Win_free(&sector_win);
-      int finalized = 0;
-      if (zc_recv_buf != nullptr) {
-         delete[] zc_recv_buf;
-         zc_recv_buf = nullptr;
-      }
-      if (patches != nullptr) {
-         delete[] patches;
-         patches = nullptr;
-      }
-      if (global_mesh != nullptr) {
-         delete global_mesh;
-         global_mesh = nullptr;
-      }
-      // Check if MPI was already shut down elsewhere.
-      MPI_Finalized(&finalized);
-      if (!finalized) {
-         MPI_Finalize();
-      }
    }
 
 public: // API:
@@ -242,7 +235,7 @@ public: // API:
          real64 rmax,
          real64 radial_mesh_ratio
    ) {
-      global_mesh = new Mesh(rmin, rmax, radial_mesh_ratio);
+      global_mesh = std::make_unique<Mesh>(rmin, rmax, radial_mesh_ratio);
       for (int ii = 0; ii < n_patch; ++ii) {
          PatchIndex idx = patches[ii].index;
          patches[ii] = Patch(
@@ -323,8 +316,6 @@ public: // communication:
 
    // The halo exchange operation in which data is sent to the left neighbor.
    void halo_exchange_send_left() {
-      zc_U zc_send_buf[n_patch];
-      zc_U zc_put_buf[n_patch];
       std::vector<MPI_Request> reqs(2*n_patch);
       int32 reqs_used = 0;
 
@@ -420,8 +411,6 @@ public: // communication:
 
    // The halo exchange operation in which data is sent to the right neighbor.
    void halo_exchange_send_right() {
-      zc_U zc_send_buf[n_patch];
-      zc_U zc_put_buf[n_patch];
       std::vector<MPI_Request> reqs(2*n_patch);
       int32 reqs_used = 0;
 
@@ -517,8 +506,6 @@ public: // communication:
 
    // The halo exchange operation in which data is sent to the down neighbor.
    void halo_exchange_send_down() {
-      zc_U zc_send_buf[n_patch];
-      zc_U zc_put_buf[n_patch];
       std::vector<MPI_Request> reqs(2*3*n_patch);
       int32 reqs_used = 0;
 
@@ -705,8 +692,6 @@ public: // communication:
 
    // The halo exchange operation in which data is sent to the up neighbor.
    void halo_exchange_send_up() {
-      zc_U zc_send_buf[n_patch];
-      zc_U zc_put_buf[n_patch];
       std::vector<MPI_Request> reqs(2*n_patch);
       int32 reqs_used = 0;
 
@@ -802,7 +787,6 @@ public: // communication:
 
    // The halo exchange operation in which data is sent to the bottom neighbor.
    void halo_exchange_send_bottom() {
-      zc_U zc_put_buf[n_patch];
       for (int32 ii = 0; ii < n_patch; ++ii) {
          auto node = connectivity.get(patches[ii].index);
          if (connectivity.inside_domain(node.B)) {
@@ -837,7 +821,6 @@ public: // communication:
 
    // The halo exchange operation in which data is sent to the top neighbor.
    void halo_exchange_send_top() {
-      zc_U zc_put_buf[n_patch];
       for (int32 ii = 0; ii < n_patch; ++ii) {
          auto node = connectivity.get(patches[ii].index);
          if (connectivity.inside_domain(node.T)) {
@@ -875,7 +858,6 @@ public: // communication:
    // the data received from neighbor patches.
    void halo_exchange_writeback_left() {
       for (int ii = 0; ii < n_patch; ++ii) {
-         auto patch = patches[ii];
          size_t idx = 0;
          for (size_t k = P::NGhost; k < P::NGhost + P::nr_zones; ++k) {
             for (size_t j = P::NGhost; j < P::NGhost + P::ntp_zones; ++j) {
@@ -894,7 +876,6 @@ public: // communication:
    // the data received from neighbor patches.
    void halo_exchange_writeback_right() {
       for (int ii = 0; ii < n_patch; ++ii) {
-         auto patch = patches[ii];
          size_t idx = 0;
          for (size_t k = P::NGhost; k < P::NGhost + P::nr_zones; ++k) {
             for (size_t j = P::NGhost; j < P::NGhost + P::ntp_zones; ++j) {
@@ -914,7 +895,7 @@ public: // communication:
    void halo_exchange_writeback_down() {
       // unload what is received via Put.
       for (int ii = 0; ii < n_patch; ++ii) {
-         auto patch = patches[ii];
+         auto& patch = patches[ii];
          auto node = connectivity.get(patch.index);
          auto up_node = connectivity.get(node.U);
          if (up_node.index.isector != node.index.isector) {
@@ -974,7 +955,6 @@ public: // communication:
    // the data received from neighbor patches.
    void halo_exchange_writeback_up() {
       for (int ii = 0; ii < n_patch; ++ii) {
-         auto patch = patches[ii];
          size_t idx = 0;
          for (size_t k = P::NGhost; k < P::NGhost + P::nr_zones; ++k) {
             for (size_t j = 0; j < P::NGhost; ++j) {
@@ -993,7 +973,7 @@ public: // communication:
    // the data received from neighbor patches.
    void halo_exchange_writeback_bottom() {
       for (int ii = 0; ii < n_patch; ++ii) {
-         auto patch = patches[ii];
+         auto& patch = patches[ii];
          auto node = connectivity.get(patch.index);
          if (connectivity.inside_domain(node.B)) {
             size_t idx = 0;
@@ -1015,7 +995,7 @@ public: // communication:
    // the data received from neighbor patches.
    void halo_exchange_writeback_top() {
       for (int ii = 0; ii < n_patch; ++ii) {
-         auto patch = patches[ii];
+         auto& patch = patches[ii];
          auto node = connectivity.get(patch.index);
          if (connectivity.inside_domain(node.T)) {
             size_t idx = 0;

@@ -42,13 +42,13 @@ public: // fields:
 
 public: // ctor:
 
-   SimulationRK(int argc, char** argv):
+   SimulationRK():
       timer(Timer()),
       timing_info1(0),
       timing_info2(0),
       alph_cak(0),
       t(0),
-      process(Process(argc, argv))
+      process(Process())
    {
 
       // At this point, communicators are established

@@ -75,7 +75,7 @@ public: // derived fields:
    // Max theoretical patches within a sector for "ilevel_max" hierarchy.
    // Also, number of patches at base level within a sector and max patches
    // actually allowed on a processor.
-   static constexpr int32 Max_base_patches_per_sector = DGCALC::ipow2<int32>(ntp_patches) * nr_patches;
+   static constexpr int32 Max_base_patches_per_sector = ntp_patches * ntp_patches * nr_patches;
 
    // sum geometric series with ratio 8
    static constexpr int32 Max_Theoretical_patches_per_sector = (DGCALC::ipow2<int32>(ilevel_max)-1) / 7;

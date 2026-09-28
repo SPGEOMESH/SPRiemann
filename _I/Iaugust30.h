@@ -37,9 +37,9 @@ class IAugust30 {
 public:
 
 
-   static void start(int argc, char** argv) {
+   static void start() {
 
-      auto simulation = Simulation(argc, argv);
+      auto simulation = Simulation();
 
 
       int32 ntimesteps = 5;

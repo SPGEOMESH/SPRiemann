@@ -10,7 +10,7 @@ set(PROJECT_VERSION "0.5.0")
 set(PROJECT_VERSION_NAME "NashvilleDolly")
 set(PROJECT_VERSION_MONTH "September")
 set(PROJECT_VERSION_YEAR "2026")
-set(PROJECT_WORKING_RDIRS "_T" "_I")
+set(PROJECT_WORKING_RDIRS "_T" "_I" "_N")
 set(ACCEL "") # "Cuda", "Metal", "" (none)
 set(ACCEL_DEPENDENCIES "") # cuBLAS, cuRAND, ...
 set(ACCEL_INSTALL_DIR "/usr/local") # /usr/local, $ENV{CUDA_HOME}, $ENV{METAL_HOME}, ...

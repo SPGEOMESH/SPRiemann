@@ -219,7 +219,9 @@ public: // ctor:
    // constructor for blank initialization,
    // because we have to go through some MPI
    // before we are ready to construct.
-   explicit Patch() = default;
+   explicit Patch() {
+      // do nothing.
+   }
 
    Patch(
          Mesh& mesh,
