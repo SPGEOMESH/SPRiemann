@@ -47,8 +47,8 @@ public: // types:
 
    // deprecated
 //   static_assert(sizeof(ZCBuffer) == sizeof(zc_U_xy)+sizeof(zc_U_z), "ZCBuffer is not contiguous on this architecture.");
-   static_assert(sizeof(FCBuffer) == sizeof(fc_B_xy)*6*2+sizeof(fc_B_z)*6, "FCBuffer is not contiguous on this architecture.");
-   static_assert(sizeof(ECBuffer) == 1, "ECBuffer is not contiguous on this architecture.");
+//   static_assert(sizeof(FCBuffer) == sizeof(fc_B_xy)*6*2+sizeof(fc_B_z)*6, "FCBuffer is not contiguous on this architecture.");
+//   static_assert(sizeof(ECBuffer) == 1, "ECBuffer is not contiguous on this architecture.");
 
    static constexpr int32 NUMORDER = P::NUMORDER;
    static constexpr int32 ilevel_max = P::ilevel_max;
@@ -238,13 +238,17 @@ public: // API:
       global_mesh = std::make_unique<Mesh>(rmin, rmax, radial_mesh_ratio);
       for (int ii = 0; ii < n_patch; ++ii) {
          PatchIndex idx = patches[ii].index;
-         patches[ii] = Patch(
+         auto& patch = patches[ii];
+         patch.initialize_geometry(
                *global_mesh,
                idx.isector,
                idx.ix,
                idx.iy,
                idx.iz,
                idx.ilevel
+         );
+         patch.initialize_MHD_variables(
+               *global_mesh
          );
       }
 
@@ -892,8 +896,9 @@ public: // communication:
 
    // load the working patch zone structure with
    // the data received from neighbor patches.
+   // In this `down` case, the Put buffer and the
+   // Isend/Irecv buffer are formatted differently.
    void halo_exchange_writeback_down() {
-      // unload what is received via Put.
       for (int ii = 0; ii < n_patch; ++ii) {
          auto& patch = patches[ii];
          auto node = connectivity.get(patch.index);
@@ -975,7 +980,7 @@ public: // communication:
       for (int ii = 0; ii < n_patch; ++ii) {
          auto& patch = patches[ii];
          auto node = connectivity.get(patch.index);
-         if (connectivity.inside_domain(node.B)) {
+         if (connectivity.inside_domain(node.T)) {
             size_t idx = 0;
             for (size_t k = P::nr_zones+P::NGhost; k < P::Nr_zones; ++k) {
                for (size_t j = 0; j < P::Ntp_zones; ++j) {
@@ -997,7 +1002,7 @@ public: // communication:
       for (int ii = 0; ii < n_patch; ++ii) {
          auto& patch = patches[ii];
          auto node = connectivity.get(patch.index);
-         if (connectivity.inside_domain(node.T)) {
+         if (connectivity.inside_domain(node.B)) {
             size_t idx = 0;
             for (size_t k = 0; k < P::NGhost; ++k) {
                for (size_t j = 0; j < P::Ntp_zones; ++j) {

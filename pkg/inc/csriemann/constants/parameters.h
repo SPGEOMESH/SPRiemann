@@ -45,6 +45,8 @@ public: // fields:
    static_assert(ilevel_max >= 1, "The ilevel_max must be at least 1.");
    static_assert(NGhost <= ntp_zones, "It is required that NGhost ≤ ntp_zones.");
    static_assert(NGhost <= nr_zones, "It is required that NGhost ≤ nr_zones.");
+   static_assert(ntp_patches >= 1, "It is required that ntp_patches ≥ 1.");
+   static_assert(nr_patches >= 1, "It is required that nr_patches ≥ 1.");
 
 public: // derived fields:
 
@@ -364,6 +366,52 @@ public: // API:
    static int32 N(size_t i) {
       return static_cast<int32>(i) - static_cast<int32>(NGhost);
    }
+
+   // These are helpers for indexing.
+   // The zone address (SECt, SECp, SECr) is independent
+   // of ntp_patches and nr_patches,
+   // and is therefore used in testing of the grid.
+
+   // sector-wide theta index, as though
+   // the entire sector were a single patch with halo regions.
+   static int32 SECt(int32 x, int32 theta) {
+      return ntp_zones*x+theta;
+   }
+
+   // sector-wide phi index, as though
+   // the entire sector were a single patch with halo regions.
+   static int32 SECp(int32 y, int32 phi) {
+      return ntp_zones*y+phi;
+   }
+
+   // sector-wide r index, as though
+   // the entire sector were a single patch with halo regions.
+   static int32 SECr(int32 z, int32 r) {
+      return nr_zones*z+r;
+   }
+
+   // return true if the zone address represents
+   // a pseudozone created by a point where three sectors meet,
+   // i.e. a "tricorner". For example, viewed at any 2d slice,
+   // consider the zone in the top left corner of a sector.
+   // The zone located at relative address "up, left" is a pseudozone.
+   // Whatever is stored in that position is junk data.
+   static bool is_tricorner_zone(int32 ix, int32 iy, int32 theta, int32 phi) {
+      return (ix == 0 && iy == 0 && theta < NGhost && phi < NGhost) ||
+      (ix == 0 && iy == ntp_patches-1 && theta < NGhost && phi >= NGhost+ntp_zones) ||
+      (ix == ntp_patches-1 && iy == 0 && theta >= NGhost+ntp_zones && phi < NGhost) ||
+      (ix == ntp_patches-1 && iy == ntp_patches-1 && theta >= NGhost+ntp_zones && phi >= NGhost+ntp_zones);
+   }
+
+   // Same as `is_tricorner_zone` but used when spoofing
+   // one pair (ntp_zones, ntp_patches) with another pair, for testing.
+   static bool is_tricorner_zone_spoof(int32 ix, int32 iy, int32 theta, int32 phi, int32 ntp_zones_spoof, int32 ntp_patches_spoof) {
+      return (ix == 0 && iy == 0 && theta < NGhost && phi < NGhost) ||
+             (ix == 0 && iy == ntp_patches_spoof-1 && theta < NGhost && phi >= NGhost+ntp_zones_spoof) ||
+             (ix == ntp_patches_spoof-1 && iy == 0 && theta >= NGhost+ntp_zones_spoof && phi < NGhost) ||
+             (ix == ntp_patches_spoof-1 && iy == ntp_patches_spoof-1 && theta >= NGhost+ntp_zones_spoof && phi >= NGhost+ntp_zones_spoof);
+   }
+
 
 
 };

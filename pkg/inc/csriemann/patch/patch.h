@@ -127,35 +127,21 @@ public: // zone-computing helper fields:
    v_4n_cc Coef_Basis_Moments;
    v_5    v_quadpts;
 
-   // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // Minimal amounts of MHD information that is stored for each of the
 // patches that reside on this processor.
 
    using mhd_zc_4 = QuadMatrix<R64, n_cc_components, Nr_zones, Ntp_zones, Ntp_zones>;
    using mhd_zc_43 = QuadMatrix<R64, 3, Nr_zones, Ntp_zones, Ntp_zones>;
-
-   using mhd_fc_4 = QuadMatrix<R64, n_cc_components, Nr_zones+1, Ntp_zones+1, Ntp_zones+1>;
-
    using mhd_zc_3 = TriMatrix<R64, Nr_zones, Ntp_zones, Ntp_zones>;
-
-   using mhd_fc_3 = TriMatrix<R64, Nr_zones+1, Ntp_zones+1, Ntp_zones+1>;
-
    using mhd_silo_zc_4 = QuadMatrix<R64, n_cc_components + SILO_EXTRA_DATA,
          Nr_zones, Ntp_zones, Ntp_zones>;
-
-   using mhd_fc_rlud_2 = Matrix<R64, Nr_zones+1, Ntp_zones+1>;
-   using mhd_fc_tb_2 = Matrix<R64, Ntp_zones+1, Ntp_zones+1>;
 
    mhd_zc_4   U, V, U0, Source;
 
    mhd_silo_zc_4  U_silo;
 
    mhd_zc_43  B0field;
-
-   // These are all the fluctuations and their defects.
-   mhd_fc_4   Fluct_x_Pl, Fluct_x_Mi, Fluct_y_Pl, Fluct_y_Mi, Fluct_z_Pl, Fluct_z_Mi,
-         Defect_Fluct_x_Pl, Defect_Fluct_x_Mi, Defect_Fluct_y_Pl, Defect_Fluct_y_Mi,
-         Defect_Fluct_z_Pl, Defect_Fluct_z_Mi;
 
    mhd_zc_3   entropygr, entropygr0, divgr, flag_entprs, flag_Tfloor,
          CGL_fbeta_gr_amr, Pelectron_gr_amr,
@@ -164,20 +150,36 @@ public: // zone-computing helper fields:
    // Zone-centered flattener for all patches on this processor.
    mhd_zc_3 flattengr;
 
-   mhd_fc_3   Bxf, Byf, Bzf, Bxf0, Byf0, Bzf0,   // facial magnetic field components.
-   Efx, Efy, Efz, Defect_Efx, Defect_Efy, Defect_Efz,   // Electric fields and defects.
-   EntFlux_x, EntFlux_y, EntFlux_z,
-         Defect_EntFlux_x, Defect_EntFlux_y, Defect_EntFlux_z;  // Entropy fluxes and defects.
 
-   // todo ask if this is window-comm buffer or some other kind of buffer.
+   using mhd_fc_4 = QuadMatrix<R64, n_cc_components, Nr_zones+1, Ntp_zones+1, Ntp_zones+1>;
+   using mhd_fc_3 = TriMatrix<R64, Nr_zones+1, Ntp_zones+1, Ntp_zones+1>;
 
-   mhd_fc_rlud_2 Bxf_rt_buf, Bxf_lf_buf, Byf_up_buf, Byf_dn_buf,   // Buffer for Bxf, Byf
-   Efy_rt_buf, Efz_rt_buf, Efy_lf_buf, Efz_lf_buf,      // Buffer for Efy and Efz at x-faces.
-   Efx_up_buf, Efz_up_buf, Efx_dn_buf, Efz_dn_buf;      // Buffer for Efx and Efz at y-faces.
+   // Magnetic field components.
+   mhd_fc_3
+         Bxf, Byf, Bzf, Bxf0, Byf0, Bzf0;
+   // Electric field components.
+   mhd_fc_3
+         Efx, Efy, Efz;
+   // Fluctuations.
+   mhd_fc_4
+         Fluct_x_Pl, Fluct_x_Mi,
+         Fluct_y_Pl, Fluct_y_Mi,
+         Fluct_z_Pl, Fluct_z_Mi;
+   // Entropy fluxes.
+   mhd_fc_3
+         EntFlux_x, EntFlux_y, EntFlux_z;
 
-   mhd_fc_tb_2  Bz_tp_buf, Bz_bt_buf,                          // Buffer for Bzf
-   Efx_tp_buf, Efy_tp_buf, Efx_bt_buf, Efy_bt_buf;   // Buffer for Efx and Efy at z-baces.
-
+   // Electric field defects.
+   mhd_fc_3
+         Defect_Efx, Defect_Efy, Defect_Efz;
+   // fluctuation defects.
+   mhd_fc_4
+         Defect_Fluct_x_Pl, Defect_Fluct_x_Mi,
+         Defect_Fluct_y_Pl, Defect_Fluct_y_Mi,
+         Defect_Fluct_z_Pl, Defect_Fluct_z_Mi;
+   // Entropy flux defects.
+   mhd_fc_3
+         Defect_EntFlux_x, Defect_EntFlux_y, Defect_EntFlux_z;
 
 public: // patch-wide quantities and patch attributes:
 
@@ -203,7 +205,6 @@ public: // patch-wide quantities and patch attributes:
    // and PAD boundary conditions.
    int32 is_bottom_or_top;
 
-
    // Patch-level predicted timestep ("dt-current plus one")
    real64 dtcurp1;
 
@@ -212,18 +213,14 @@ public: // patch-wide quantities and patch attributes:
    V_1 V_min;
    V_1 V_max;
 
-
-
 public: // ctor:
 
-   // constructor for blank initialization,
-   // because we have to go through some MPI
-   // before we are ready to construct.
-   explicit Patch() {
-      // do nothing.
-   }
+   // constructor is left empty
+   // so that empty heap memory allocations can be performed
+   // while the Process class is still being initialized.
+   explicit Patch() {}
 
-   Patch(
+   void initialize_geometry(
          Mesh& mesh,
          int32 isector,
          int32 ix,
@@ -349,60 +346,69 @@ public: // ctor:
       );
       // By this point, all geometry is built. Therefore, we are now in a position
       // to initialize the MHD variables for this patch.
-      int32 iproblem = P::iproblem;
-      init_patch_cube_sphere_(
-            &mesh.nr_zones,
-            &mesh.ntp_zones,
-            &mesh.NGhost,
-            &mesh.n_cc_components,
-            &mesh.n_cc_modes,
-            &mesh.n_fc_modes,
-            &iproblem,
-            // This method uses time t.
-            &time,
-            // This method will initialize dtcur for this patch.
-            &dtcur,
-            //
-            &mesh.rmin,
-            &mesh.rmax,
-            reinterpret_cast<real64*>(&vert_coords),
-            reinterpret_cast<int32*>(&imask_active),
-            // x
-            reinterpret_cast<real64*>(&v_scale_length),
-            reinterpret_cast<real64*>(&xf_quadpts),
-            reinterpret_cast<real64*>(&xf_quadwt),
-            reinterpret_cast<real64*>(&xf_quadnorml),
-            reinterpret_cast<real64*>(&xf_area),
-            reinterpret_cast<real64*>(&xf_centroid),
-            // y
-            reinterpret_cast<real64*>(&yf_quadpts),
-            reinterpret_cast<real64*>(&yf_quadwt),
-            reinterpret_cast<real64*>(&yf_quadnorml),
-            reinterpret_cast<real64*>(&yf_area),
-            reinterpret_cast<real64*>(&yf_centroid),
-            // z
-            reinterpret_cast<real64*>(&zf_quadpts),
-            reinterpret_cast<real64*>(&zf_quadwt),
-            reinterpret_cast<real64*>(&zf_quadnorml),
-            reinterpret_cast<real64*>(&zf_area),
-            reinterpret_cast<real64*>(&zf_centroid),
-            // v
-            reinterpret_cast<real64*>(&v_quadpts),
-            reinterpret_cast<real64*>(&v_quadwt),
-            //
-            reinterpret_cast<real64*>(&U),
-            reinterpret_cast<real64*>(&V),
-            reinterpret_cast<real64*>(&entropygr),
-            reinterpret_cast<real64*>(&Bxf),
-            reinterpret_cast<real64*>(&Byf),
-            reinterpret_cast<real64*>(&Bzf),
-            reinterpret_cast<real64*>(&B0field),
-            reinterpret_cast<real64*>(&gamma_eos_gr),
-            reinterpret_cast<real64*>(&V_min),
-            reinterpret_cast<real64*>(&V_max)
-      );
+      // This is done in `initialize_MHD_variables`.
    }
 
+
+   // This method is highly problem-specific.
+   void initialize_MHD_variables(
+         Mesh& mesh
+   ) {
+      // This makes the method problem-dependent.
+      // This approach puts the problem-dependent code on the Fortran side.
+      int32 iproblem = P::iproblem;
+      init_patch_cube_sphere_(
+         &mesh.nr_zones,
+         &mesh.ntp_zones,
+         &mesh.NGhost,
+         &mesh.n_cc_components,
+         &mesh.n_cc_modes,
+         &mesh.n_fc_modes,
+         &iproblem,
+         // This method uses time t.
+         &time,
+         // This method will initialize dtcur for this patch.
+         &dtcur,
+         //
+         &mesh.rmin,
+         &mesh.rmax,
+         reinterpret_cast<real64*>(&vert_coords),
+         reinterpret_cast<int32*>(&imask_active),
+         // x
+         reinterpret_cast<real64*>(&v_scale_length),
+         reinterpret_cast<real64*>(&xf_quadpts),
+         reinterpret_cast<real64*>(&xf_quadwt),
+         reinterpret_cast<real64*>(&xf_quadnorml),
+         reinterpret_cast<real64*>(&xf_area),
+         reinterpret_cast<real64*>(&xf_centroid),
+         // y
+         reinterpret_cast<real64*>(&yf_quadpts),
+         reinterpret_cast<real64*>(&yf_quadwt),
+         reinterpret_cast<real64*>(&yf_quadnorml),
+         reinterpret_cast<real64*>(&yf_area),
+         reinterpret_cast<real64*>(&yf_centroid),
+         // z
+         reinterpret_cast<real64*>(&zf_quadpts),
+         reinterpret_cast<real64*>(&zf_quadwt),
+         reinterpret_cast<real64*>(&zf_quadnorml),
+         reinterpret_cast<real64*>(&zf_area),
+         reinterpret_cast<real64*>(&zf_centroid),
+         // v
+         reinterpret_cast<real64*>(&v_quadpts),
+         reinterpret_cast<real64*>(&v_quadwt),
+         //
+         reinterpret_cast<real64*>(&U),
+         reinterpret_cast<real64*>(&V),
+         reinterpret_cast<real64*>(&entropygr),
+         reinterpret_cast<real64*>(&Bxf),
+         reinterpret_cast<real64*>(&Byf),
+         reinterpret_cast<real64*>(&Bzf),
+         reinterpret_cast<real64*>(&B0field),
+         reinterpret_cast<real64*>(&gamma_eos_gr),
+         reinterpret_cast<real64*>(&V_min),
+         reinterpret_cast<real64*>(&V_max)
+      );
+   }
 
 private: // methods:
 

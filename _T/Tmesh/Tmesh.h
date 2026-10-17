@@ -46,8 +46,8 @@ public:
                 radial_mesh_ratio
         );
 
-//        cout << mesh.vertices.str() << endl;
-//        cout << mesh.coordinates.str() << endl;
+        cout << mesh.vertices.str() << endl;
+        cout << mesh.coordinates.str() << endl;
 //        cout << mesh.rb.str() << endl;
 //        cout << mesh.dr.str() << endl;
 //        cout << mesh.rc.str() << endl;

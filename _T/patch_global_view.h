@@ -5,6 +5,11 @@
 
 #include <csriemann/patch/patch.h>
 
+/*
+ *
+ * Provide a global view of a patch (in storage)
+ * via GlobalView::make().
+ */
 template <typename Parameters>
 class GlobalView {
 
@@ -22,7 +27,17 @@ public:
    // denotes zone index location.
    // Should be called by a process. If all
    // processes execute, all patches will be stored.
-   static void make(Patch* patches, int32 n_patch, const std::string& prefix = "", int32 iproc = 0, bool distinguish_proc = false, int32 icc = 0, int32 iz = 0, int32 ir = P::NGhost, int32 ilevel = 0) {
+   static void make(
+         Patch* patches,
+         int32 n_patch,
+         const std::string& prefix = "",
+         int32 iproc = 0,
+         bool distinguish_proc = false,
+         int32 icc = 0,
+         int32 iz = 0,
+         int32 ir = P::NGhost,
+         int32 ilevel = 0
+   ) {
       for (int32 ii = 0; ii < n_patch; ++ii) {
          auto& patch = patches[ii];
          auto isector = patch.index.isector;
@@ -37,28 +52,54 @@ public:
          }
          std::string content;
          std::string tricorner = "3.333333333333333e+33 ";
-         size_t ir_ = static_cast<size_t>(ir);
-         size_t icc_ = static_cast<size_t>(icc);
          for (int32 ip = P::Ntp_zones-1; ip >= 0; --ip) {
             for (size_t it = 0; it < P::Ntp_zones; ++it) {
-               auto ip_ = static_cast<size_t>(ip);
                // check for tricorners.
-               if ((ix == 0 && iy == 0 && it < P::NGhost && ip < P::NGhost) ||
-                     (ix == 0 && iy == P::ntp_patches-1 && it < P::NGhost && ip >= P::NGhost+P::ntp_zones) ||
-                     (ix == P::ntp_patches-1 && iy == 0 && it >= P::NGhost+P::ntp_zones && ip < P::NGhost) ||
-                     (ix == P::ntp_patches-1 && iy == P::ntp_patches-1 && it >= P::NGhost+P::ntp_zones && ip >= P::NGhost+P::ntp_zones)
-               ) {
+               if (P::is_tricorner_zone(ix, iy, it, ip)) {
                   content += tricorner;
                }
                else {
+                  size_t icc_ = static_cast<size_t>(icc);
+                  size_t ir_ = static_cast<size_t>(ir);
+                  auto ip_ = static_cast<size_t>(ip);
                   content += std::format("{:.15e} ", patch.U[{icc_, ir_}][{ip_, it}].under());
                }
             }
             content += "\n";
          }
+         // for testing: this dumps a raw image of the patch U
 //         content += patch.U.str();
          savetxt(filename, content);
       }
+   }
+
+
+   [[nodiscard]]
+   static std::string make_3d(
+         Patch& patch
+   ) {
+      auto ix = patch.index.ix;
+      auto iy = patch.index.iy;
+      std::string content;
+      std::string tricorner = "3.333333333333333e+33 ";
+      for (int32 ir = 0; ir < P::Nr_zones; ++ir) {
+         content += std::format("// ir = {}\n", ir);
+         for (int32 ip = P::Ntp_zones-1; ip >= 0; --ip) {
+            for (size_t it = 0; it < P::Ntp_zones; ++it) {
+               // check for tricorners.
+               if (P::is_tricorner_zone(ix, iy, it, ip)) {
+                  content += tricorner;
+               }
+               else {
+                  auto ir_ = static_cast<size_t>(ir);
+                  auto ip_ = static_cast<size_t>(ip);
+                  content += std::format("{:.15e} ", patch.U[{0, ir_}][{ip_, it}].under());
+               }
+            }
+            content += "\n";
+         }
+      }
+      return content;
    }
 
 };

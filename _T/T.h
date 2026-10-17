@@ -20,11 +20,12 @@ const char * catch_argv[]{
 #include <Tmesh/Tmesh.h>
 #include <Tmesh/Tquadpoints.h>
 
-
+#include <Tconnectivity/Tconnectivity.h>
 #include <Tpatch/Tpatch.h>
-#include <Tpatch/Tconnectivity.h>
-#include <Tprocess/Tprocess.h>
 
+
+#include <Tprocess/Tprocess.h>
+#include <Tprocess/Tprocess_plot.h>
 
 
 

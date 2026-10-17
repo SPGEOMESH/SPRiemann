@@ -52,7 +52,9 @@ public:
         int32 iz = 1;
         int32 ilevel = 1;
 
-        auto patch = Patch<P>(
+        auto patch = Patch<P>();
+
+        patch.initialize_geometry(
                 mesh,
                 isector,
                 ix,
@@ -153,7 +155,9 @@ public:
         int32 iz = 1;
         int32 ilevel = 1;
 
-        auto patch = Patch<P>(
+        auto patch = Patch<P>();
+
+        patch.initialize_geometry(
                 mesh,
                 isector,
                 ix,
@@ -163,8 +167,8 @@ public:
         );
 
 
-        // Print while spoofing output from a Fortran test.
-        // Use to confirm all is well.
+        // Print commands spoof output from a Fortran test.
+        // Use to confirm first-pass functionality.
 
 
         auto vcp = patch.vert_coords;

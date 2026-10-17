@@ -28,7 +28,6 @@ public: // types:
     using cc_mode_revt = P::cc_mode_revt;
 
 
-
 public: // fields:
 
     // avoid ODR-use of constexpr

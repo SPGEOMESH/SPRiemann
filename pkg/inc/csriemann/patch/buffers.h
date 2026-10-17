@@ -27,11 +27,12 @@ struct ZCBuffer {
 
    using P = Parameters;
 
-   static constexpr int32 size_ZCBuffer = P::n_cc_components*P::Nr_zones*P::Ntp_zones*P::NGhost;
-
    static constexpr int32 size_left_right = P::n_cc_components*P::nr_zones*P::ntp_zones*P::NGhost;
    static constexpr int32 size_down_up = P::n_cc_components*P::nr_zones*P::Ntp_zones*P::NGhost;
    static constexpr int32 size_bottom_top = P::n_cc_components*P::Nr_zones*P::Ntp_zones*P::NGhost;
+
+   // This is taken to be the largest of the sizes needed for left-right, down-up, bottom-top halo exchange.
+   static constexpr int32 size_ZCBuffer = P::n_cc_components*P::Nr_zones*P::Ntp_zones*P::NGhost;
 
    using zc_U = std::array<real64, size_ZCBuffer>;
 
@@ -61,6 +62,16 @@ struct FCBuffer {
    fc_B_xy Bxf_r, Bxf_l, Byf_r, Byf_l, Bzf_l, Bzf_r,
          Bxf_u, Bxf_d, Byf_u, Byf_d, Bzf_u, Bzf_d;
    fc_B_z Bxf_t, Bxf_b, Byf_t, Byf_b, Bzf_t, Bzf_b;
+
+   using mhd_fc_rlud_2 = Matrix<R64, Nr_zones+1, Ntp_zones+1>;
+   using mhd_fc_tb_2 = Matrix<R64, Ntp_zones+1, Ntp_zones+1>;
+
+   mhd_fc_rlud_2 Bxf_rt_buf, Bxf_lf_buf, Byf_up_buf, Byf_dn_buf,   // Buffer for Bxf, Byf
+   Efy_rt_buf, Efz_rt_buf, Efy_lf_buf, Efz_lf_buf,      // Buffer for Efy and Efz at x-faces.
+   Efx_up_buf, Efz_up_buf, Efx_dn_buf, Efz_dn_buf;      // Buffer for Efx and Efz at y-faces.
+
+   mhd_fc_tb_2  Bz_tp_buf, Bz_bt_buf,                          // Buffer for Bzf
+   Efx_tp_buf, Efy_tp_buf, Efx_bt_buf, Efy_bt_buf;   // Buffer for Efx and Efy at z-baces.
 
 };
 

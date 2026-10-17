@@ -1,6 +1,7 @@
 
 // This test mocks the
-// test TEST_QUADPOINTS
+// test:
+// TEST_QUADPOINTS
 
 #pragma once
 
@@ -64,13 +65,15 @@ public:
         int32 iz = 1;
         int32 ilevel_ = ilevel;
 
-        auto patch = Patch<P>(
-                mesh,
-                isector,
-                ix,
-                iy,
-                iz,
-                ilevel_
+        auto patch = Patch<P>();
+
+        patch.initialize_geometry(
+             mesh,
+             isector,
+             ix,
+             iy,
+             iz,
+             ilevel_
         );
 
 
