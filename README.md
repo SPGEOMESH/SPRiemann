@@ -31,6 +31,18 @@ dgcalc run
 
 Some tests will run without first compiling CubeSphere.
 
-Will add more documentation later. 
+> *Will add more documentation.*
+
+
+## Acknowledgements
+
+This project is supported by the National Science Foundation:
+
+| Award Number                                                                  | Principal Investigator                 |
+|:------------------------------------------------------------------------------|:---------------------------------------|
+| **[NSF-2514037](https://www.nsf.gov/awardsearch/show-award/?AWD_ID=2514037)** | Dr. Vladimir Florinski (UAH)           |
+| **[NSF-2514038](https://www.nsf.gov/awardsearch/show-award/?AWD_ID=2514038)** | Dr. Dinshaw Balsara (Univ. Notre Dame) |
+
+*Disclaimer: Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.*
 
 
