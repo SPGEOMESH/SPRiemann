@@ -2,6 +2,8 @@
 
 # SPRiemann
 
+![Development Status](https://img.shields.io/badge/status-experimental-orange)
+
 SPRiemann is a C++ implementation of the [Cube Sphere](https://www.github.com/SPGEOMESH/CubeSphere) Fortran library. 
 This reconstruction of the Cube Sphere code moves communication and other features over to the C++ side, and extends support from single-level cube sphere meshes to a state-of-the-art spherical geodesic adaptive mesh refinement (AMR) mesh. 
 
