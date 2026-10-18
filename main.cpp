@@ -40,9 +40,9 @@ int main(int argc, char** argv) {
 
    // Tests of automated tests
 
-//   NPatch::Npatch_test1();
+   NPatch::Npatch_test1();
 //   NPatch::Npatch_test2();
-   NPatch::Npatch_test3();
+//   NPatch::Npatch_test3();
 
    int finalized = 0;
    // Check if MPI was already shut down elsewhere.
