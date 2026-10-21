@@ -1,9 +1,9 @@
 
 #include <Tbasis.h>
 
-#include <csriemann/constants/parameters.h>
-#include <csriemann/constants/directives.h>
-#include <csriemann/mesh.h>
+#include <spriemann/constants/parameters.h>
+#include <spriemann/constants/directives.h>
+#include <spriemann/mesh.h>
 
 
 class TMesh {
@@ -51,7 +51,6 @@ public:
 //        cout << mesh.rb.str() << endl;
 //        cout << mesh.dr.str() << endl;
 //        cout << mesh.rc.str() << endl;
-
 
         cout << mesh.ii_mode.str() << endl;
         cout << mesh.jj_mode.str() << endl;

@@ -3,8 +3,8 @@
 
 
 #include <array>
-#include <csriemann/constants/types.h>
-#include <csriemann/patch/patch_index.h>
+#include <spriemann/constants/types.h>
+#include <spriemann/patch/patch_index.h>
 
 
 template <int32 ilevel_max>

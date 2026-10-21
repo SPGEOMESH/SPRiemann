@@ -1,40 +1,40 @@
 
 #pragma once
 
-#include <csriemann/constants/parameters.h>
-#include <csriemann/mesh.h>
-#include <csriemann/patch/patch.h>
+#include <spriemann/constants/parameters.h>
+#include <spriemann/mesh.h>
+#include <spriemann/patch/patch.h>
 
 
 class TPatch {
 public:
 
-    using Directives = Directives<>;
-
-    static constexpr size_t ntp_patches = 1;
-    static constexpr size_t nr_patches = 1;
-
-    static constexpr size_t ntp_zones = 5;
-    static constexpr size_t nr_zones = 5;
-    static constexpr size_t NGhost = 2;
-    static constexpr size_t ilevel_max = 1;
-
-    static constexpr size_t ntp_global = ntp_patches*ntp_zones;
-    static constexpr size_t nr_global = nr_patches*nr_zones;
-    static constexpr size_t NGhost_global = NGhost;
-
-    using P = Parameters<
-            Directives,
-            ntp_zones,
-            nr_zones,
-            ntp_patches,
-            nr_patches,
-            NGhost,
-            ilevel_max
-    >;
-
 
     static void Tdryrun() {
+
+       using Directives = Directives<>;
+
+       static constexpr size_t ntp_patches = 1;
+       static constexpr size_t nr_patches = 1;
+
+       static constexpr size_t ntp_zones = 5;
+       static constexpr size_t nr_zones = 5;
+       static constexpr size_t NGhost = 2;
+       static constexpr size_t ilevel_max = 1;
+
+       static constexpr size_t ntp_global = ntp_patches*ntp_zones;
+       static constexpr size_t nr_global = nr_patches*nr_zones;
+       static constexpr size_t NGhost_global = NGhost;
+
+       using P = Parameters<
+             Directives,
+             ntp_zones,
+             nr_zones,
+             ntp_patches,
+             nr_patches,
+             NGhost,
+             ilevel_max
+       >;
 
         real64 rmin = 10.0;
         real64 rmax = 11.0;
@@ -139,6 +139,30 @@ public:
 
     static void Txf_quadpts_patch() {
 
+       using Directives = Directives<>;
+
+       static constexpr size_t ntp_patches = 1;
+       static constexpr size_t nr_patches = 1;
+
+       static constexpr size_t ntp_zones = 5;
+       static constexpr size_t nr_zones = 5;
+       static constexpr size_t NGhost = 2;
+       static constexpr size_t ilevel_max = 1;
+
+       static constexpr size_t ntp_global = ntp_patches*ntp_zones;
+       static constexpr size_t nr_global = nr_patches*nr_zones;
+       static constexpr size_t NGhost_global = NGhost;
+
+       using P = Parameters<
+             Directives,
+             ntp_zones,
+             nr_zones,
+             ntp_patches,
+             nr_patches,
+             NGhost,
+             ilevel_max
+       >;
+
         real64 rmin = 1.5;
         real64 rmax = 2.5;
         real64 radial_mesh_ratio = 2.0;
@@ -171,7 +195,7 @@ public:
         // Use to confirm first-pass functionality.
 
 
-        auto vcp = patch.vert_coords;
+        auto& vcp = patch.vert_coords;
         for (size_t k = 0; k < P::Ntp_zones+1; ++k) {
             for (size_t j = 0; j < P::Ntp_zones+1; ++j) {
                 for (size_t i = 0; i < P::Nr_zones+1; ++i) {
@@ -186,7 +210,7 @@ public:
         }
 
 
-        auto xfq = patch.xf_quadpts;
+        auto& xfq = patch.xf_quadpts;
         for (size_t k = 0; k < P::Ntp_zones+1; ++k) {
             for (size_t j = 0; j < P::Ntp_zones; ++j) {
                 for (size_t i = 0; i < P::Nr_zones; ++i) {
@@ -204,6 +228,130 @@ public:
 
 
     }
+
+
+
+    // test of the method `initialize_MHD_variables`.
+   static void Tinitialize_MHD_variables() {
+
+      using Directives = Directives<
+            IPDESystem::CGL,
+            3
+      >;
+
+      static constexpr size_t ntp_patches = 1;
+      static constexpr size_t nr_patches = 1;
+
+      static constexpr size_t ntp_zones = 3;
+      static constexpr size_t nr_zones = 3;
+      static constexpr size_t NGhost = 2;
+      static constexpr size_t ilevel_max = 1;
+      // try 0, 2, 7 challenge: 14, 16
+      static constexpr size_t iproblem = 14;
+
+      static constexpr size_t ntp_global = ntp_patches*ntp_zones;
+      static constexpr size_t nr_global = nr_patches*nr_zones;
+      static constexpr size_t NGhost_global = NGhost;
+
+      using P = Parameters<
+            Directives,
+            ntp_zones,
+            nr_zones,
+            ntp_patches,
+            nr_patches,
+            NGhost,
+            ilevel_max,
+            iproblem
+      >;
+
+      real64 rmin = 10.0;
+      real64 rmax = 11.0;
+      real64 radial_mesh_ratio = 1.0;
+
+      auto mesh = Mesh<P>(
+            rmin,
+            rmax,
+            radial_mesh_ratio
+      );
+
+      int32 isector = 3;
+      int32 ix = 1;
+      int32 iy = 1;
+      int32 iz = 1;
+      int32 ilevel = 1;
+
+      auto patch = Patch<P>();
+
+      patch.initialize_geometry(
+            mesh,
+            isector,
+            ix,
+            iy,
+            iz,
+            ilevel
+      );
+
+      patch.initialize_MHD_variables(mesh);
+
+//      cout << "U\n" << patch.U.str() << endl;
+//      cout << "Bxf\n" << patch.Bxf.str() << endl;
+
+
+
+
+//      for (size_t k = P::NGhost; k < P::nr_zones; ++k) {
+//         for (size_t j = P::NGhost; j < P::ntp_zones; ++j) {
+//            for (size_t i = P::NGhost; i < P::ntp_zones; ++i) {
+//               auto Bxf = patch.Bxf[k][{j,i}];
+//               auto Byf = patch.Byf[k][{j,i}];
+//               auto Bzf = patch.Bzf[k][{j,i}];
+//               cout << std::format("i {} j {} k {} Bxf {} Bxy {} Bxz {}", i, j, k, Bxf.under(), Byf.under(), Bzf.under()) << endl;
+//            }
+//         }
+//      }
+
+
+
+       for (size_t k = P::NGhost; k < P::nr_zones+P::NGhost; ++k) {
+          for (size_t j = P::NGhost; j < P::ntp_zones+P::NGhost; ++j) {
+             for (size_t i = P::NGhost; i < P::ntp_zones+P::NGhost; ++i) {
+                auto xf_area_minus = patch.xf_area[k][{j,i}];
+                auto yf_area_minus = patch.yf_area[k][{j,i}];
+                auto zf_area_minus = patch.zf_area[k][{j,i}];
+                auto xf_area_plus = patch.xf_area[k][{j,i+1}];
+                auto yf_area_plus = patch.yf_area[k][{j+1,i}];
+                auto zf_area_plus = patch.zf_area[k+1][{j,i}];
+                auto ii = i+1;
+                auto jj = j+1;
+                auto kk = k+1;
+                auto Bxf_minus = patch.Bxf[kk][{jj,ii-1}];
+                auto Byf_minus = patch.Byf[kk][{jj-1,ii}];
+                auto Bzf_minus = patch.Bzf[kk-1][{jj,ii}];
+                auto Bxf_plus = patch.Bxf[kk][{jj,ii}];
+                auto Byf_plus = patch.Byf[kk][{jj,ii}];
+                auto Bzf_plus = patch.Bzf[kk][{jj,ii}];
+                // a second order accurate discrete estimate of the divergence
+                // of the magnetic field B at the zone center.
+                auto div = xf_area_plus*Bxf_plus + yf_area_plus*Byf_plus + zf_area_plus*Bzf_plus
+                      - xf_area_minus*Bxf_minus - yf_area_minus*Byf_minus - zf_area_minus*Bzf_minus;
+                cout << endl;
+                cout << std::format("i j k {} {} {}", i-1, j-1, k-1) << endl;
+//                cout << std::format("Axf Bxf {} {}", xf_area_plus.under(), Bxf_plus.under()) << endl;
+//                cout << std::format("Ayf Byf {} {}", yf_area_plus.under(), Byf_plus.under()) << endl;
+//                cout << std::format("Azf Bzf {} {}", zf_area_plus.under(), Bzf_plus.under()) << endl;
+//                cout << "---" << endl;
+//                cout << std::format("(-) Axf Bxf {} {}", xf_area_minus.under(), Bxf_minus.under()) << endl;
+//                cout << std::format("(-) Ayf Byf {} {}", yf_area_minus.under(), Byf_minus.under()) << endl;
+//                cout << std::format("(-) Azf Bzf {} {}", zf_area_minus.under(), Bzf_minus.under()) << endl;
+                cout << "div " << div.under() << endl;
+             }
+          }
+       }
+
+
+   }
+
+
 
 
 };

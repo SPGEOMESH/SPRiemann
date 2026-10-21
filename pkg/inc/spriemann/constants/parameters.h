@@ -3,7 +3,7 @@
 #pragma once
 
 
-#include <csriemann/constants/types.h>
+#include <spriemann/constants/types.h>
 
 
 
@@ -16,7 +16,10 @@ template <
         int32 nr_patches_,
         // number of ghost zones
         int32 NGhost_,
-        int32 ilevel_max_
+        int32 ilevel_max_,
+        // default (-1) fixes a reasonable problem based on IPDE_SYSTEM,
+        // for real runs choose explicitly.
+        int32 iproblem_ = -1
 >
 class Parameters {
 public: // fields:
@@ -99,7 +102,7 @@ public: // derived fields:
                                (Directives::NUMORDER == 3)? 10:
                                /* numorder == 4 */ 20;
 
-   static constexpr int32 iproblem = (Directives::IPDE_SYSTEM == IPDESystem::MHD)? 1:
+   static constexpr int32 iproblem = (iproblem_ != -1)? iproblem_: (Directives::IPDE_SYSTEM == IPDESystem::MHD)? 1:
                                      (Directives::IPDE_SYSTEM == IPDESystem::CGL)? 2:
                                      /* (Directives::IPDE_SYSTEM == IPDESystem::CGL_p_elec) ? */ 3;
 
@@ -150,6 +153,7 @@ public: // older version of types: (deprecated)
    // sector-specific vertex coordinates. (no radial coordinate)
    using coordinates_gr_t = TriMatrix<R64, Ntp_zones+1, Ntp_zones+1, 3>;
    using coordinates_gr_revt = TriMatrix<R64, 3, Ntp_zones+1, Ntp_zones+1>;
+   // todo loop over ilevel 0...ilevel_max and call mesh_sector_general (variable array sizes!!!!!)
 
    using vertices_t = Matrix<R64, 4, 3>;
    using vertices_revt = Matrix<R64, 3, 4>;

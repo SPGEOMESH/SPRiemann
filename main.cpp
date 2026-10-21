@@ -14,7 +14,8 @@ int main(int argc, char** argv) {
 
 //    TPatch::Tdryrun();
 //    TPatch::Txf_quadpts_patch();
-//    Tquadpoints::Tdryrun();
+   TPatch::Tinitialize_MHD_variables();
+//    Tquadpoints::test_quadpoints();
 
 //   TConnectivity::Tdryrun();
 //   TConnectivity::Tvisualize_xyz();
@@ -37,10 +38,9 @@ int main(int argc, char** argv) {
 
 //   IAugust30::start();
 
-
    // Tests of automated tests
 
-   NPatch::Npatch_test1();
+//   NPatch::Npatch_test1();
 //   NPatch::Npatch_test2();
 //   NPatch::Npatch_test3();
 

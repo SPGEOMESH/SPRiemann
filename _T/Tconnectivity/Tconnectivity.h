@@ -3,9 +3,9 @@
 
 #include <Tbasis.h>
 
-#include <csriemann/constants/parameters.h>
-#include <csriemann/constants/directives.h>
-#include <csriemann/connectivity.h>
+#include <spriemann/constants/parameters.h>
+#include <spriemann/constants/directives.h>
+#include <spriemann/connectivity.h>
 
 
 class TConnectivity {

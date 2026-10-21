@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <csriemann/constants/types.h>
+#include <spriemann/constants/types.h>
 
 // Recall that when Fortran is compiled to
 // library code using gfortran, symbols are
@@ -391,6 +391,7 @@ void init_patch_cube_sphere_(
 
 // todo - refactor on fortran side, extract
 //  from module and formulate signature
+// base patch - level 1 (the bottom level)
 void build_base_patches_(
 
       // ...

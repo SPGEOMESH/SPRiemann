@@ -3,7 +3,7 @@
 
 #include <Tbasis.h>
 
-#include <csriemann/patch/patch.h>
+#include <spriemann/patch/patch.h>
 
 /*
  *

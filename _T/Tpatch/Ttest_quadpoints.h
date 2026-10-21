@@ -1,16 +1,14 @@
 
-// This test mocks the
-// test:
-// TEST_QUADPOINTS
+
 
 #pragma once
 
 #include <Tbasis.h>
 
-#include <csriemann/constants/parameters.h>
-#include <csriemann/constants/directives.h>
-#include <csriemann/mesh.h>
-#include <csriemann/patch/patch.h>
+#include <spriemann/constants/parameters.h>
+#include <spriemann/constants/directives.h>
+#include <spriemann/mesh.h>
+#include <spriemann/patch/patch.h>
 
 
 class Tquadpoints {
@@ -46,8 +44,9 @@ public:
             ilevel_max
     >;
 
-
-    static void Tdryrun() {
+   // This test mocks the Fortran source code test:
+   // TEST_QUADPOINTS
+    static void test_quadpoints() {
 
         real64 rmin = 10.0;
         real64 rmax = 11.0;
@@ -75,7 +74,6 @@ public:
              iz,
              ilevel_
         );
-
 
 //        cout << patch.vert_coords.str() << endl;
         cout << patch.imask_active.str() << endl;

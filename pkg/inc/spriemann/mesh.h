@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include <csriemann/extern_c/com.h>
-#include <csriemann/extern_c/mesh.h>
-#include <csriemann/constants/types.h>
+#include <spriemann/extern_c/com.h>
+#include <spriemann/extern_c/mesh.h>
+#include <spriemann/constants/types.h>
 
 
 template <
@@ -51,8 +51,10 @@ public: // fields:
 
     // todo review: these structured types
     //  are byte-equivalent to vertices_revt and coordinates_gr_global
+    // todo review Fortran - (4, 3) making 4 coordinates for each of 6 sectors - review
     Vector<Coordinate, 6> vertices;
     Vector<coordinates_gr_revt, 6> coordinates;
+    // todo for ilevel_max > 1 - 5D vector with ilevel argument - ntp_global doubles in dimension!!!
 
    real64 rmin;
    real64 rmax;
@@ -104,6 +106,9 @@ public: // ctor:
             reinterpret_cast<real64*>(&coordinates[isector-1])
          );
       }
+      // todo for general ilevel_max > 1, call mesh_sector_general with
+      //  ntp_global *= 2
+      //  for each ilevel
       // done filling each sector, now fill ghost zones
       for (isector = 1; isector <= 6; ++isector) {
          fill_ghost2d_global_(
@@ -201,6 +206,7 @@ public: // ctor:
       }
       // Builds the indices that enable us to zip through the
       // zone-centered and face-centered reconstructions.
+      // powers of polynomials (useful at higher orders)
       build_mode_indices_(
       &n_cc_modes,
       reinterpret_cast<int32*>(&ii_mode),

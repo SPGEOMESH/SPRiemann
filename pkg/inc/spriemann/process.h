@@ -1,12 +1,12 @@
 
 #pragma once
 
-#include <csriemann/patch/patch.h>
-#include <csriemann/connectivity.h>
-#include <csriemann/mesh.h>
-#include <csriemann/patch/buffers.h>
+#include <spriemann/patch/patch.h>
+#include <spriemann/connectivity.h>
+#include <spriemann/mesh.h>
+#include <spriemann/patch/buffers.h>
 
-#include <csriemann/extern_c/riemann_integrate.h>
+#include <spriemann/extern_c/riemann_integrate.h>
 
 #include <kiwi/mpi/sim.h>
 
@@ -134,7 +134,7 @@ public: // ctor:
       int is_initialized = 0;
       MPI_Initialized(&is_initialized);
       if (!is_initialized) {
-         std::cout << "Creating a Process before initializing MPI is not permitted." << endl;
+         std::cout << "Creating a Process before initializing MPI is not permitted." << std::endl;
          exit(-1);
       }
       // nimages == comm_world_size TODO

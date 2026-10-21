@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <csriemann/constants/types.h>
+#include <spriemann/constants/types.h>
 
 // Recall that when Fortran is compiled to
 // library code using gfortran, symbols are

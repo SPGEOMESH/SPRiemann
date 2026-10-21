@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <csriemann/constants/types.h>
+#include <spriemann/constants/types.h>
 
 struct SectorNeighbor {
    int32 L;

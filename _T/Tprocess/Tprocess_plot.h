@@ -3,9 +3,9 @@
 
 #include <Tbasis.h>
 
-#include <csriemann/constants/parameters.h>
-#include <csriemann/constants/directives.h>
-#include <csriemann/process.h>
+#include <spriemann/constants/parameters.h>
+#include <spriemann/constants/directives.h>
+#include <spriemann/process.h>
 
 #include <patch_global_view.h>
 

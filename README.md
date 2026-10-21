@@ -10,7 +10,7 @@ This reconstruction of the Cube Sphere code moves communication and other featur
 # Steps to run
 
 Navigate to a directory where you would like to install. 
-Then:
+Then: 
 ```bash
 pip install -U dgcalc
 dgcalc get DGCALC SPGEOMESH

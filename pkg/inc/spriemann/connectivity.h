@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include <csriemann/patch/patch_node.h>
-#include <csriemann/patch/sector_neighbor.h>
-#include <csriemann/patch/patch_initialization_data.h>
+#include <spriemann/patch/patch_node.h>
+#include <spriemann/patch/sector_neighbor.h>
+#include <spriemann/patch/patch_initialization_data.h>
 
 #include <kiwi/mpi/sim.h>
 

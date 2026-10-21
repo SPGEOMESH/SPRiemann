@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include <csriemann/constants/types.h>
-#include <csriemann/process.h>
-#include <csriemann/connectivity.h>
+#include <spriemann/constants/types.h>
+#include <spriemann/process.h>
+#include <spriemann/connectivity.h>
 
 #include <kiwi/timer.h>
 #include <kiwi/mpi/sim.h>

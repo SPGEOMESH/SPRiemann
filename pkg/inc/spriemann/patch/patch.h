@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <csriemann/mesh.h>
-#include <csriemann/patch/patch_index.h>
+#include <spriemann/mesh.h>
+#include <spriemann/patch/patch_index.h>
 
 /*
  * A data structure
@@ -247,8 +247,14 @@ public: // ctor:
          reinterpret_cast<real64*>(&mesh.rb),
          // OUTPUT:
          reinterpret_cast<real64*>(&vert_coords),
+         // tricorner mask
          reinterpret_cast<int32*>(&imask_active)
       );
+      // todo ilevel_max > 1 - these must be called in each level with ntp_zones modified appropriately
+
+      // todo review --> Save "vert_coords_patch, imask active_patch" for later reuse.
+      // ...
+      // populate istencil local integer coordinates
       stencil_indexing_tricorners_(
          &mesh.ntp_zones,
          &mesh.nr_zones,
@@ -267,6 +273,8 @@ public: // ctor:
          // OUTPUT:
          reinterpret_cast<int32*>(&istencil)
       );
+      // todo review --> Save "vert_coords_patch, imask active_patch" for later reuse.
+      // ...
       coords_to_wt_quadpts_faces_iso2_(
           &mesh.nr_global,
           &mesh.ntp_zones,

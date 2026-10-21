@@ -3,7 +3,7 @@
 
 #include <Ibasis.h>
 
-#include <csriemann/csriemann.h>
+#include <spriemann/spriemann.h>
 
 
 class IAugust30 {

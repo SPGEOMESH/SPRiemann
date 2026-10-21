@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include <csriemann/constants/types.h>
-#include <csriemann/patch/patch_index.h>
-#include <csriemann/patch/patch_status.h>
+#include <spriemann/constants/types.h>
+#include <spriemann/patch/patch_index.h>
+#include <spriemann/patch/patch_status.h>
 
 /*
  * Data needed about patch,
